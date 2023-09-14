@@ -5,6 +5,13 @@ import * as dat from 'lil-gui'
 THREE.ColorManagement.enabled = false
 
 /**
+ * textureLoader
+ * baked 阴影纹理效果
+ */
+const textureLoader = new THREE.TextureLoader()
+const bakedShadow = textureLoader.load('/textures/bakedShadow.jpg')
+
+/**
  * Base
  */
 // Debug
@@ -141,7 +148,11 @@ sphere.castShadow =true
 
 const plane = new THREE.Mesh(
     new THREE.PlaneGeometry(5, 5),
-    material
+    // 加载有阴影的物料
+    new THREE.MeshBasicMaterial({
+        map:bakedShadow
+    }
+    )
 )
 plane.rotation.x = - Math.PI * 0.5
 plane.position.y = - 0.5
@@ -199,7 +210,7 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 // 渲染器阴影开启
-renderer.shadowMap.enabled =true
+renderer.shadowMap.enabled = false
 // 阴影渲染算法选择
 // 边缘好看
 renderer.shadowMap.type = THREE.PCFSoftShadowMap
