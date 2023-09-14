@@ -10,6 +10,7 @@ THREE.ColorManagement.enabled = false
  */
 const textureLoader = new THREE.TextureLoader()
 const bakedShadow = textureLoader.load('/textures/bakedShadow.jpg')
+const simlpeShadow = textureLoader.load('/textures/simpleShadow.jpg')
 
 /**
  * Base
@@ -148,11 +149,12 @@ sphere.castShadow =true
 
 const plane = new THREE.Mesh(
     new THREE.PlaneGeometry(5, 5),
+    material
     // 加载有阴影的物料
-    new THREE.MeshBasicMaterial({
-        map:bakedShadow
-    }
-    )
+    // new THREE.MeshBasicMaterial({
+    //     map:bakedShadow
+    // }
+    // )
 )
 plane.rotation.x = - Math.PI * 0.5
 plane.position.y = - 0.5
@@ -161,6 +163,23 @@ plane.receiveShadow =true
 
 
 scene.add(sphere, plane)
+
+
+//增加一个阴影
+const  sphereShdow = new THREE.Mesh(
+    new THREE.PlaneBufferGeometry(1.5,1.5),
+    new THREE.MeshBasicMaterial({
+        color:0x000000,
+        // alphamap 使用先决条件
+        transparent:true,
+        alphaMap:simlpeShadow
+    })
+)
+// 旋转,平移
+sphereShdow.rotation.x = - Math.PI *0.5
+sphereShdow.position.y = plane.position.y +0.01
+scene.add(sphereShdow)
+
 
 /**
  * Sizes
@@ -227,7 +246,21 @@ const clock = new THREE.Clock()
 const tick = () =>
 {
     const elapsedTime = clock.getElapsedTime()
-
+    //球进行绕原点旋转弹跳
+    // x轴左右移动
+    sphere.position.x = Math.cos(elapsedTime)*1.5;
+    // z轴里外移动 
+    sphere.position.z = Math.sin(elapsedTime)*1.5;
+    // y 轴上下移动 保持为正值 *3 是加速度
+    sphere.position.y = Math.abs(Math.sin(elapsedTime*3))
+    
+    /**
+     * 阴影部分跟随
+     */
+    sphereShdow.position.x = sphere.position.x;
+    sphereShdow.position.z = sphere.position.z;
+    // y 轴阴影部分的浅深
+    sphereShdow.material.opacity = (1 - sphere.position.y)*0.8
     // Update controls
     controls.update()
 
