@@ -81,6 +81,7 @@ material.roughness = 0.2
 // material.aoMapIntensity = 1
 /**
  * 位移图
+ * 图片白色部分向上,黑色部分向下,灰色部分不动
  * */ 
 // 置换贴图会影响网格顶点的位置。与其他仅影响材质明暗的贴图不同，位移顶点可以投射阴影、阻挡其他对象，并以其他方式充当真实几何体。置换纹理是一种图像，其中每个像素的值（白色最高）映射到网格的顶点并重新定位
 // material.displacementMap = doorHeightTexture
