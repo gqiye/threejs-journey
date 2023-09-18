@@ -87,6 +87,15 @@ world.gravity.set(0,-9.82,0)
 // 切换到SAPBroadphase
 world.broadphase = new CANNON.SAPBroadphase(world);
 
+/**
+ * 睡眠Sleep 优化性能
+    虽然我们使用改进的BroadPhase算法，但所有物体还是都要经过测试，即便是那些不再移动的刚体。
+    因此我们需要当刚体移动非常非常缓慢以至于看不出其有在移动时，我们说这个刚体进入睡眠，
+    除非有一股力施加在刚体上来唤醒它使其开始移动，否则我们不会进行测试。
+    sleepSpeedLimit  sleepTimeLimit 可以调整参数,一般情况默认即可
+ */
+    world.allowSleep = true
+
 /* material 物料 */
 
 // 世界物体的物料都用同一种
