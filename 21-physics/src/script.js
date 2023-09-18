@@ -9,6 +9,19 @@ THREE.ColorManagement.enabled = false
  * Debug
  */
 const gui = new dat.GUI()
+const debugObject= {}
+debugObject.createSphere = ()=>{
+    
+    console.log('create a sphere')
+    
+ createSphere(Math.random() * 0.5, 
+ { 
+    x:(Math.random() * 0.5)*3,
+    y:3,
+    z:(Math.random() * 0.5)*3 })
+
+}
+gui.add(debugObject,'createSphere')
 
 /**
  * Base
@@ -95,20 +108,20 @@ world.defaultContactMaterial = defaultContactMaterial
 
 
 // sphere 球
-const sphereShape = new CANNON.Sphere(0.5)
-// 类似 threejs 的几何
-const sphereBody = new CANNON.Body(
-    {
-        // 质量
-        mass:1,
-        // 位置
-        position:new CANNON.Vec3(0,3,0),
-        // 形状
-        shape:sphereShape,
-        // 物料
-        // material:plasticMaterial 
-    }
-)
+// const sphereShape = new CANNON.Sphere(0.5)
+// // 类似 threejs 的几何
+// const sphereBody = new CANNON.Body(
+//     {
+//         // 质量
+//         mass:1,
+//         // 位置
+//         position:new CANNON.Vec3(0,3,0),
+//         // 形状
+//         shape:sphereShape,
+//         // 物料
+//         // material:plasticMaterial 
+//     }
+// )
 /**
  * 施加力 
  * 
@@ -134,10 +147,10 @@ const sphereBody = new CANNON.Body(
 // 参数 force —— 力的大小(Vec3)
 // worldPoint —— 施加力的世界点(Vec3)
 //  在球体中心原点处施加一个力(动画函数外部)，在页面刷新完成那一帧施加力
-sphereBody.applyLocalForce(new CANNON.Vec3(150,0,0),new CANNON.Vec3(0,0,0))
+// sphereBody.applyLocalForce(new CANNON.Vec3(150,0,0),new CANNON.Vec3(0,0,0))
 
 // 将物体添加到world场景
-world.addBody(sphereBody)
+// world.addBody(sphereBody)
 
 // floor 地板
 const floorShape = new CANNON.Plane();
@@ -165,18 +178,18 @@ world.addBody(floorBody)
 /**
  * Test sphere
  */
-const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(0.5, 32, 32),
-    new THREE.MeshStandardMaterial({
-        metalness: 0.3,
-        roughness: 0.4,
-        envMap: environmentMapTexture,
-        envMapIntensity: 0.5
-    })
-)
-sphere.castShadow = true
-sphere.position.y = 0.5
-scene.add(sphere)
+// const sphere = new THREE.Mesh(
+//     new THREE.SphereGeometry(0.5, 32, 32),
+//     new THREE.MeshStandardMaterial({
+//         metalness: 0.3,
+//         roughness: 0.4,
+//         envMap: environmentMapTexture,
+//         envMapIntensity: 0.5
+//     })
+// )
+// sphere.castShadow = true
+// sphere.position.y = 0.5
+// scene.add(sphere)
 
 /**
  * Floor
@@ -259,6 +272,56 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
+
+/**
+ * utils
+ * 球体函数
+ */
+// 用来存储需要更新的对象
+const objectToUpdate = []
+// threejs sphere
+const sphereGeometry = new THREE.SphereBufferGeometry(1 ,20 ,20);
+const sphereMaterial = new THREE.MeshStandardMaterial({
+    metalness:0.3,
+    roughness:0.4,
+    envMap:environmentMapTexture
+})
+
+// 利用函数新建一个球体 
+ const createSphere = (radius,position)=>{
+    // 新建threejs 的mesh 球体
+    // mesh 表示基于三角形多边形网格的对象的类。
+    const meshSphere = new THREE.Mesh(
+        sphereGeometry,
+        sphereMaterial
+    ) 
+    // 利用缩放,改变radius
+    meshSphere.scale.set(radius,radius,radius)
+    meshSphere.castShadow = true;
+    meshSphere.position.copy(position)
+    scene.add(meshSphere)
+
+    // 新建一个Cannon的对应球体
+    const cannonSphere = new CANNON.Sphere(radius);
+    const body = new CANNON.Body({
+        mass:1,
+        position:new CANNON.Vec3(0,3,0),
+        shape:cannonSphere,
+        material:defaultMaterial
+    })
+    body.position.copy(position);
+    world.addBody(body)
+
+    // 存储更新对象
+    objectToUpdate.push({
+        meshSphere,
+        body
+    })
+ }
+
+
+ createSphere(0.5,{x:0,y:3,z:0})
+
 /**
  * Animate
  */
@@ -281,7 +344,7 @@ const tick = () =>
      * 下面用applyForce方法来模拟一股与球体运动反方向的持续的风。
      * 因为要像风一样不断的持续施加力，所以回到动画函数，我们要在更新物理世界前更新每一帧动画。
      */
-    sphereBody.applyForce(new CANNON.Vec3(-0.5,0,0),sphereBody.position)
+    // sphereBody.applyForce(new CANNON.Vec3(-0.5,0,0),sphereBody.position)
     
     /**
      * physics world 物理世界更新
@@ -295,11 +358,17 @@ const tick = () =>
      */
     world.step(1/60,deltaTime,3)
 
+    // 更新 群组对象将物理世界的物体坐标赋值给threejs的物体
+    for (const object of objectToUpdate) {
+        object.meshSphere.position.copy(object.body.position)
+    }
+
     // 将物理世界的物体坐标赋值给threejs的物体
-    sphere.position.copy(sphereBody.position)
+    // sphere.position.copy(sphereBody.position)
     // sphere.position.x = sphereBody.position.x
     // sphere.position.y = sphereBody.position.y
     // sphere.position.z = sphereBody.position.z
+    
 
     // Update controls
     controls.update()
