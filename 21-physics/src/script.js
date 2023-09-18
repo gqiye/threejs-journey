@@ -23,6 +23,22 @@ debugObject.createSphere = ()=>{
 }
 gui.add(debugObject,'createSphere')
 
+debugObject.createBox = ()=>{
+    
+    console.log('create a box')
+    
+ createBox(
+    Math.random(), 
+    Math.random(), 
+    Math.random(), 
+  { 
+     x:(Math.random() * 0.5)*3,
+     y:3,
+     z:(Math.random() * 0.5)*3 
+    })
+}
+gui.add(debugObject,'createBox')
+
 /**
  * Base
  */
@@ -56,6 +72,21 @@ const world = new CANNON.World()
 // 设置重力
 world.gravity.set(0,-9.82,0)
 
+/**
+ * 碰撞检测性能优化
+ * 
+ 1.粗测阶段(BroadPhase)
+    cannon.js会一直测试物体是否与其他物体发生碰撞，这非常消耗CPU性能，这一步成为BroadPhase。
+    当然我们可以选择不同的BroadPhase来更好的提升性能。
+    NaiveBroadphase(默认) —— 测试所有的刚体相互间的碰撞。
+    GridBroadphase —— 使用四边形栅格覆盖world，仅针对同一栅格或相邻栅格中的其他刚体进行碰撞测试。
+    SAPBroadphase(Sweep And Prune) —— 在多个步骤的任意轴上测试刚体。
+    默认broadphase为NaiveBroadphase，建议切换到SAPBroadphase。
+    当然如果物体移动速度非常快，最后还是会产生一些bug。
+ */
+// 切换到SAPBroadphase
+world.broadphase = new CANNON.SAPBroadphase(world);
+
 /* material 物料 */
 
 // 世界物体的物料都用同一种
@@ -75,7 +106,6 @@ world.addContactMaterial(defaultContactMaterial)
 // 让物理世界都使用同一种物料
 // 注意赋值应该是物体碰撞效果
 world.defaultContactMaterial = defaultContactMaterial
-
 
 
 
@@ -274,10 +304,11 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 
 /**
- * utils
+ * sphere utils 
  * 球体函数
  */
-// 用来存储需要更新的对象
+
+// // 用来存储需要更新的对象
 const objectToUpdate = []
 // threejs sphere
 const sphereGeometry = new THREE.SphereBufferGeometry(1 ,20 ,20);
@@ -291,15 +322,15 @@ const sphereMaterial = new THREE.MeshStandardMaterial({
  const createSphere = (radius,position)=>{
     // 新建threejs 的mesh 球体
     // mesh 表示基于三角形多边形网格的对象的类。
-    const meshSphere = new THREE.Mesh(
+    const mesh = new THREE.Mesh(
         sphereGeometry,
         sphereMaterial
     ) 
     // 利用缩放,改变radius
-    meshSphere.scale.set(radius,radius,radius)
-    meshSphere.castShadow = true;
-    meshSphere.position.copy(position)
-    scene.add(meshSphere)
+    mesh.scale.set(radius,radius,radius)
+    mesh.castShadow = true;
+    mesh.position.copy(position)
+    scene.add(mesh)
 
     // 新建一个Cannon的对应球体
     const cannonSphere = new CANNON.Sphere(radius);
@@ -314,13 +345,58 @@ const sphereMaterial = new THREE.MeshStandardMaterial({
 
     // 存储更新对象
     objectToUpdate.push({
-        meshSphere,
+        mesh,
         body
     })
  }
-
-
  createSphere(0.5,{x:0,y:3,z:0})
+
+
+/**
+ * box utils
+ * 盒子函数
+ * 
+ */
+// threejs box
+const boxGeometry = new THREE.BoxBufferGeometry(1,1,1);
+const boxMaterial = new THREE.MeshStandardMaterial({
+    metalness:0.3,
+    roughness:0.4,
+    envMap:environmentMapTexture
+})
+
+
+ const createBox = (width,height,depth,position)=>{
+    // mesh 表示基于三角形多边形网格的对象的类。
+    const mesh = new THREE.Mesh(
+        boxGeometry,
+        boxMaterial
+    ) 
+    // 利用缩放,改变radius
+    mesh.scale.set(width,height,depth)
+    mesh.castShadow = true;
+    mesh.position.copy(position)
+    scene.add(mesh)
+
+    // 新建一个Cannon的对应球体
+    const cannonSphere = new CANNON.Box(new CANNON.Vec3( width/2,height/2,depth/2));
+    const body = new CANNON.Body({
+        mass:1,
+        position:new CANNON.Vec3(0,3,0),
+        shape:cannonSphere,
+        material:defaultMaterial
+    })
+    body.position.copy(position);
+    world.addBody(body)
+
+    // 存储更新对象
+    objectToUpdate.push({
+        mesh,
+        body
+    })
+ }
+//  createSphere(0.5,{x:0,y:3,z:0})
+
 
 /**
  * Animate
@@ -360,7 +436,9 @@ const tick = () =>
 
     // 更新 群组对象将物理世界的物体坐标赋值给threejs的物体
     for (const object of objectToUpdate) {
-        object.meshSphere.position.copy(object.body.position)
+        object.mesh.position.copy(object.body.position)
+        // 盒子物体碰撞之后旋转 四元数
+        object.mesh.quaternion.copy(object.body.quaternion)
     }
 
     // 将物理世界的物体坐标赋值给threejs的物体
