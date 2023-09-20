@@ -45,10 +45,34 @@ const gltfLoader = new GLTFLoader()
 // 使用setDRACOLoader()将DRACOLoader实例dracoLoader提供给GLTFLoader实例gltfLoader
 gltfLoader.setDRACOLoader(dracoLoader)
 
-// 使用DracoLoader需要向GLTFLoader提供一个DracoLoader实例
-gltfLoader.load('/models/Duck/glTF-Draco/Duck.gltf', gltf => {
+let mixer = null
+// 加载动画模型
+gltfLoader.load('/models/Fox/glTF/Fox.gltf', gltf => {
+    console.log(gltf,gltf.scene)
+    /**
+     * 创建动画混合器
+     * gltf对象包含由多个AnimationClip组成的animations属性
+     * 为此我们需要创建一个动画混合器AnimationMixer
+     * AnimationMixer类似于可以包含一个或多个AnimationClips对象的播放器
+     */
+     // 创建混合器并传入gltf.scene
+  	 mixer = new THREE.AnimationMixer(gltf.scene)
+    // 使用clipAction()方法将索引为0的AnimationClip添加到混合器中
+  	// 这个方法会返回一个AnimationAction
+    // gltf.animations 就是模型自带的动画效果数组
+  	const action = mixer.clipAction(gltf.animations[2])
+    // 使用play()方法调用这个AnimationAction
+  	action.play()
+
+    // 设置大小
+    gltf.scene.scale.set(0.025,0.025,0.025)
     scene.add(gltf.scene)
   })
+
+// 使用DracoLoader需要向GLTFLoader提供一个DracoLoader实例
+// gltfLoader.load('/models/Duck/glTF-Draco/Duck.gltf', gltf => {
+//     scene.add(gltf.scene)
+//   })
 
 // 另外三种引入方式
 // gltfLoader.load(
@@ -195,7 +219,11 @@ const tick = () =>
     const elapsedTime = clock.getElapsedTime()
     const deltaTime = elapsedTime - previousTime
     previousTime = elapsedTime
-
+    //更新混合器
+    // 渲染需要时间,所以需要判断一下是否存在
+    if (mixer !== null) {
+        mixer.update(deltaTime)
+    }
     // Update controls
     controls.update()
 
