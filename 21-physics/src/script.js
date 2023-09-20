@@ -39,6 +39,20 @@ debugObject.createBox = ()=>{
 }
 gui.add(debugObject,'createBox')
 
+//重置场景
+debugObject.reset = () => {
+    for (const object of objectToUpdate) {
+      //移除刚体body
+      object.body.removeEventListener('collide', playHitSound)
+      world.removeBody(object.body)
+      // 移除网格mesh
+      scene.remove(object.mesh)
+    }
+  }
+  
+  gui.add(debugObject,'reset')
+
+
 /**
  * Base
  */
@@ -47,6 +61,28 @@ const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
+
+/**
+ * sounds
+ * 待优化
+ */
+const hitSound = new Audio('/sounds/hit.mp3')
+const playHitSound = (collision)=>{
+    // 获取碰撞强度
+    const impactStrength = collision.contact.getImpactVelocityAlongNormal()
+    // 碰撞音效非常规律，明显与实际不符。currentTime属性将声音重置为重头开始播放
+    if (impactStrength > 1.5) {
+        // 音量大小?
+        // audio.volume = number
+        // 属性值：它包含单个属性值编号，代表音频音量的值。体积的值是：
+        // 1.0：这是最高的音量。它是默认值。
+        // 0.5：用于指定一半的音量。
+        // 0.0：用于指定零音量/静音/静音
+        hitSound.volume = Math.random()
+        hitSound.currentTime = 0
+        hitSound.play()
+    }
+}
 
 /**
  * Textures
@@ -350,6 +386,7 @@ const sphereMaterial = new THREE.MeshStandardMaterial({
         material:defaultMaterial
     })
     body.position.copy(position);
+    body.addEventListener('collide',playHitSound)
     world.addBody(body)
 
     // 存储更新对象
@@ -396,6 +433,9 @@ const boxMaterial = new THREE.MeshStandardMaterial({
         material:defaultMaterial
     })
     body.position.copy(position);
+    // 增加物体碰撞声音
+    // 可以监听刚体事件像是碰撞colide、睡眠sleep或唤醒wakeup
+    body.addEventListener('collide',playHitSound)
     world.addBody(body)
 
     // 存储更新对象
