@@ -44,6 +44,20 @@ geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1))
 // 但是像map、alphaMap、opacity、 color等属性将不再生效，
 // 因为我们需要自己在着色器中编写这些特性。
 const material = new THREE.RawShaderMaterial({
+/***
+ *     // 有内置attributes和uniforms，精度也会自动设置。
+ * const material = new THREE.ShaderMaterial({
+ * 然后在着色器中移除下面这些uniform，attribute和precision：
+
+uniform mat4 projectionMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 modelMatrix;
+attribute vec3 position;
+attribute vec2 uv;
+precision mediump float;
+之后着色器会跟之前一样正常运行，因为它会自动添加上上面这些。
+ *  */ 
+
     vertexShader:testVertexShader,
     fragmentShader:testFragmentShader,
     // 降低alpha值使能够看出差异
