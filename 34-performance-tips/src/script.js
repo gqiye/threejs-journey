@@ -1,5 +1,14 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import Stats from'stats.js';
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+
+/**
+ * stats
+ */
+const stats = new Stats()
+stats.showPanel(0)
+document.body.appendChild(stats.dom);
 
 /**
  * Base
@@ -122,6 +131,7 @@ const clock = new THREE.Clock()
 
 const tick = () =>
 {
+    stats.begin();
     const elapsedTime = clock.getElapsedTime()
 
     // Update test mesh
@@ -135,6 +145,8 @@ const tick = () =>
 
     // Call tick again on the next frame
     window.requestAnimationFrame(tick)
+
+    stats.end()
 }
 
 tick()
@@ -145,7 +157,7 @@ tick()
 
 // // Tip 4
 // console.log(renderer.info)
-
+// renderer.info.render.triangles 有多少个三角形
 // // Tip 6
 // scene.remove(cube)
 // cube.geometry.dispose()
@@ -180,6 +192,28 @@ tick()
 // renderer.shadowMap.needsUpdate = true
 
 // // Tip 18
+// const geometries = []
+// for(let i = 0; i < 50; i++)
+// {
+//     const geometry = new THREE.BoxBufferGeometry(0.5, 0.5, 0.5)
+
+//     geometry.translate(
+//         (Math.random()-0.5)*10,
+//         (Math.random()-0.5)*10,
+//         (Math.random()-0.5)*10
+//     )
+//     geometry.rotateX((Math.random()-0.5)*Math.PI*2)
+//     geometry.rotateY((Math.random()-0.5)*Math.PI*2)
+
+//     geometries.push(geometry)
+// }
+// const mergedGeometry = BufferGeometryUtils.mergeBufferGeometries(geometries)
+
+// const material =new THREE.MeshNormalMaterial()
+
+// const mesh = new THREE.Mesh(mergedGeometry,material)
+
+// scene.add(mesh)
 // for(let i = 0; i < 50; i++)
 // {
 //     const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5)
@@ -231,6 +265,46 @@ tick()
 // }
 
 // // Tip 22
+const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5)
+
+const material = new THREE.MeshNormalMaterial();
+
+// 新建一个mesh对50个几何进行实例
+const mesh = new THREE.InstancedMesh(geometry,material,50)
+// 在tick里面改变矩阵参数,从而改变几何,文件中说明使用会更好
+mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
+scene.add(mesh)
+    
+for(let i = 0; i < 50; i++)
+{
+    const position = new THREE.Vector3(
+        (Math.random() - 0.5) * 10,
+        (Math.random() - 0.5) * 10,
+        (Math.random() - 0.5) * 10
+    )
+
+    //四元数
+    const quaternion = new THREE.Quaternion()
+    // 欧拉 ,xyz
+    quaternion.setFromEuler(new THREE.Euler(
+        (Math.random() - 0.5) * Math.PI * 2,
+        (Math.random() - 0.5) * Math.PI * 2,
+        0
+    ))
+
+    // 4维矩阵
+    const matrix = new THREE.Matrix4()
+    // 根据四元数进行旋转
+    matrix.makeRotationFromQuaternion(quaternion)
+
+    // 设置位置变化
+    matrix.setPosition(position);
+
+    // 参数一 矩阵个数 ,根据矩阵进行变换
+    mesh.setMatrixAt(i,matrix)
+
+
+}
 // const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5)
 
 // const material = new THREE.MeshNormalMaterial()
