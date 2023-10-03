@@ -1,12 +1,50 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { gsap } from 'gsap'
 
+
+const loadingBarElement = document.querySelector('.loading-bar')
 /**
  * Loaders
  */
-const gltfLoader = new GLTFLoader()
-const cubeTextureLoader = new THREE.CubeTextureLoader()
+// 实例化一个加载管理器LoadingManager并在GLTFLoader和CubeTextureLoader中使用它
+const loadingManager = new THREE.LoadingManager(
+    // Loaded
+    () =>
+    {
+        // 第一次渲染场景中的元素需要时间，计算机会暂时冻结。
+        // 其次，我们在进度条中添加了0.5秒的过渡时长。这也就意味着，当加载函数被触发时，进度条还没有完成到结束状态的转换。
+        gsap.delayedCall(0.5,()=>{
+            gsap.to(overlayMaterial.uniforms.uAlpha, { duration: 3, value: 0 , delay: 1})
+            loadingBarElement.classList.add('ended')
+            loadingBarElement.style.transform = ''
+        })
+        // window.setTimeout(() =>
+        // {
+        // gsap.to(overlayMaterial.uniforms.uAlpha, { duration: 3, value: 0 , delay: 1})
+        // loadingBarElement.classList.add('ended')
+        // loadingBarElement.style.transform = ''
+        // },500)
+    },
+
+    // Progress
+    // url ： 被加载的项的url。
+    // itemsLoaded ： 目前已加载项的个数。
+    // itemsTotal ： 总共所需要加载项的个数。
+    (itemUrl, itemsLoaded, itemsTotal) =>
+    {
+        // console.log(itemUrl, itemsLoaded, itemsTotal)
+        // 进度条
+        const progressRatio = itemsLoaded / itemsTotal
+        loadingBarElement.style.transform = `scaleX(${progressRatio})`
+    }
+)
+const gltfLoader = new GLTFLoader(loadingManager)
+const cubeTextureLoader = new THREE.CubeTextureLoader(loadingManager)
+
+
+
 
 /**
  * Base
@@ -19,6 +57,41 @@ const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
+
+/**
+ * Overlay
+ */
+const overlayGeometry = new THREE.PlaneBufferGeometry(2, 2, 1, 1)
+const overlayMaterial = new THREE.ShaderMaterial(
+   { 
+    transparent: true,
+    uniforms:
+    {
+        uAlpha: { value: 1 }
+    },
+    // 要这个平面不论摄像机如何移动位置，其一直位于摄像机前方并且填满整个渲染。
+    vertexShader: `
+        void main()
+        {
+            // gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            // 得到一个矩形在画面正中间，不受任何相机移动造成的影响，因为它没有用到任何矩阵：
+            gl_Position = vec4(position, 1.0);
+        }
+    `,
+    fragmentShader: `
+        uniform float uAlpha;
+
+        void main()
+        {
+            gl_FragColor = vec4(0.0, 0.0, 0.0,uAlpha);
+        }
+    `
+    }
+    
+    )
+const overlay = new THREE.Mesh(overlayGeometry, overlayMaterial)
+scene.add(overlay)
+
 
 /**
  * Update all materials
