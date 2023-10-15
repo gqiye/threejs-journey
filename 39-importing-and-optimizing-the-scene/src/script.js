@@ -32,15 +32,68 @@ dracoLoader.setDecoderPath('draco/')
 const gltfLoader = new GLTFLoader()
 gltfLoader.setDRACOLoader(dracoLoader)
 
+
 /**
- * Object
+ * texture
  */
-const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshBasicMaterial()
+
+const bakedTexture = textureLoader.load('/baked.jpg')
+// 纹理被翻转渲染,要翻转回来
+bakedTexture.flipY = false
+// 设置色彩空间 blender建模的时候使用sRGB 所以要切换
+// 切换之后设置渲染器
+// 152+ encoding 遗弃改为colorSpace (THREE.TextureDataType)
+// defaultValue--THRE.LinearEncoding
+// 152+ THREE.sRGBEncoding 被遗弃改为 THREE.SRGBColorSpace
+bakedTexture.colorSpace = THREE.SRGBColorSpace;
+
+
+/**
+ * materials
+ */
+
+// baked material 烘焙加一个基础物料
+const bakedMaterial = new THREE.MeshBasicMaterial({map:bakedTexture})
+
+// 处理灯光纹理
+const poleLightMaterial = new THREE.MeshBasicMaterial({color:0xffffe5});
+
+// 传松门纹理
+const portalLightMaterial = new THREE.MeshBasicMaterial({color:0xffffff
+// 背面看不见这个面，可以使用配置让背面可以被看到
+,side:THREE.DoubleSide
+});
+
+/**
+ * model 模型加载
+ */
+gltfLoader.load(
+    'portal.glb',
+    (gltf)=>{
+        // traverse 遍历每个元素
+        // gltf.scene.traverse((child)=>{
+        //     // console.log(child)
+        //     child.material = bakedMaterial
+        // })
+        // console.log(gltf.scene.children)
+    // baked
+    const bakedMesh = gltf.scene.children.find((child)=>child.name === 'baked')
+    // 处理灯光传送门 
+    const poleLightAMesh = gltf.scene.children.find((child)=>child.name === 'poleLightA')
+    const poleLightBMesh = gltf.scene.children.find((child)=>child.name === 'poleLightB')
+    const portalLightMesh = gltf.scene.children.find((child)=>child.name === 'portalLight')
+    
+    bakedMesh.material = bakedMaterial;
+    poleLightAMesh.material = poleLightMaterial;
+    poleLightBMesh.material = poleLightMaterial;
+    portalLightMesh.material = portalLightMaterial;
+
+        scene.add(gltf.scene)
+        // console.log(gltf.scene)
+    }
 )
 
-scene.add(cube)
+
 
 /**
  * Sizes
@@ -88,6 +141,9 @@ const renderer = new THREE.WebGLRenderer({
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+// 设置与否效果不明显
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+// renderer.outputEncoding  被遗弃
 
 /**
  * Animate
