@@ -172,6 +172,7 @@ const renderer = new THREE.WebGLRenderer({
     canvas: canvas,
     // 只能在实例化的时候开启
     // 像素高的显示屏看不出来
+    // 不需要精细的三维效果，因此渲染器的抗锯齿属性 antialias 可以设置为 false。
     antialias:true
 })
 renderer.setSize(sizes.width, sizes.height)
