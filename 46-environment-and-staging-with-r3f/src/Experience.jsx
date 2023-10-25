@@ -216,6 +216,7 @@ export default function Experience()
             <planeGeometry />
             <meshStandardMaterial color="greenyellow" envMapIntensity={envMapIntensity}/>
         </mesh> */}
+        {/*Stage文档 https://github.com/pmndrs/drei#staging */}
         <Stage
             ContactShadows={
                 {
