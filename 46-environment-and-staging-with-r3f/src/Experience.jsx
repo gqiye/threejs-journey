@@ -14,7 +14,8 @@ import { useFrame } from '@react-three/fiber'
 // sky 天空
 // Environment 环境光环境贴图
 // Lightformer 灯光
-import {Lightformer ,Environment, Sky, ContactShadows,RandomizedLight, AccumulativeShadows, SoftShadows,BakeShadows,useHelper,OrbitControls} from '@react-three/drei'
+// Stage 舞台助手
+import {Stage,Lightformer ,Environment, Sky, ContactShadows,RandomizedLight, AccumulativeShadows, SoftShadows,BakeShadows,useHelper,OrbitControls} from '@react-three/drei'
 import { useRef } from 'react'
 import { Perf } from 'r3f-perf'
 import * as THREE from 'three'
@@ -67,7 +68,7 @@ export default function Experience()
         {/* 環境 
             参数文档 https://github.com/pmndrs/drei/blob/master/src/helpers/environment-assets.ts
         */}
-        <Environment 
+        {/* <Environment 
             // 背景图
             // background
             // 分辨率 用于内部的一些mesh light的图,不会影响环境图
@@ -93,7 +94,7 @@ export default function Experience()
             // 有更加現實的光
             // https://polyhaven.com/hdris
             files={'./environmentMaps/the_sky_is_on_fire_2k.hdr'}
-        >
+        > */}
             {/* 设置背景环境颜色 */}
             {/* <color args={['black']} attach="background"></color> */}
             {/* 反射光照 
@@ -111,7 +112,7 @@ export default function Experience()
                 <planeGeometry/>
                 <meshBasicMaterial color={[10,0,0]}/>
             </mesh> */}
-        </Environment>
+        {/* </Environment> */}
 
 
         {/* 烘焙渲染,只会在渲染一次,减少性能使用 */}
@@ -122,7 +123,7 @@ export default function Experience()
          samples= { 17 }
          rings ={11}
         /> */}
-        <color args={['#fff000']} attach='background'/>
+        {/* <color args={['#fff000']} attach='background'/> */}
          
         <Perf position="top-left" />
 
@@ -165,7 +166,7 @@ export default function Experience()
         </AccumulativeShadows> */}
 
         {/* 投影 */}
-        <ContactShadows 
+        {/* <ContactShadows 
         position={[0,0,0]}
          scale={10}
          resolution={512}
@@ -176,7 +177,7 @@ export default function Experience()
          blur={blur}
         //  渲染帧率,数量渲染完结束,不再渲染
         frames={1}
-         />
+         /> */}
         {/* 點燈 */}
         {/* <directionalLight
          ref={directionalLight} 
@@ -201,6 +202,31 @@ export default function Experience()
             sunPosition={sunPosition}
         /> */}
 
+        {/* <mesh castShadow position-y={1} position-x={ - 2 }>
+            <sphereGeometry />
+            <meshStandardMaterial color="orange" envMapIntensity={envMapIntensity}/>
+        </mesh>
+
+        <mesh castShadow position-y={1}  ref={ cube } position-x={ 2 } scale={ 1.5 }>
+            <boxGeometry />
+            <meshStandardMaterial color="mediumpurple" envMapIntensity={envMapIntensity}/>
+        </mesh> */}
+
+        {/* <mesh position-y={ 0 } rotation-x={ - Math.PI * 0.5 } scale={ 10 }>
+            <planeGeometry />
+            <meshStandardMaterial color="greenyellow" envMapIntensity={envMapIntensity}/>
+        </mesh> */}
+        <Stage
+            ContactShadows={
+                {
+                    opacity:0.2,
+                    blur:3
+                }
+            }
+            environment={'sunset'}
+            preset={'portrait'}
+            intensity={2}
+        >
         <mesh castShadow position-y={1} position-x={ - 2 }>
             <sphereGeometry />
             <meshStandardMaterial color="orange" envMapIntensity={envMapIntensity}/>
@@ -210,11 +236,6 @@ export default function Experience()
             <boxGeometry />
             <meshStandardMaterial color="mediumpurple" envMapIntensity={envMapIntensity}/>
         </mesh>
-
-        {/* <mesh position-y={ 0 } rotation-x={ - Math.PI * 0.5 } scale={ 10 }>
-            <planeGeometry />
-            <meshStandardMaterial color="greenyellow" envMapIntensity={envMapIntensity}/>
-        </mesh> */}
-
+        </Stage>
     </>
 }
