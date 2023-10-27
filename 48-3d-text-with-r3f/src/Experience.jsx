@@ -11,18 +11,20 @@ const material = new THREE.MeshMatcapMaterial();
 
 export default function Experience()
 {
+    const donuts = useRef([]);
+    // console.log(donuts)
     // 访问群组
-    const donutsGroup = useRef();
+    // const donutsGroup = useRef();
     // 时间函数动画
     useFrame((state,delta)=>{
         // console.log(delta)
-        for (const donut of donutsGroup.current.children) {
-            
+        // for (const donut of donutsGroup.current.children) {
+        //     donut.rotation.y += delta*0.3
+        // }
+        for (const donut of donuts.current) {
             donut.rotation.y += delta*0.3
-            
         }
     })
-
 
     // 优化一 简化渲染的几何体,物料
     // const [torusGeometry, setTorusGeometry] = useState();
@@ -72,10 +74,13 @@ export default function Experience()
             </Text3D>
         </Center>
         {/* 新建分组是为了访问组内元素 */}
-        <group ref={donutsGroup}>
+        {/* <group ref={donutsGroup}> */}
         {
             [...Array(100)].map((value,index)=> 
             <mesh
+                ref ={(element)=>{
+                    donuts.current[index]= element
+                }}
                 key={ index }
                 geometry={ torusGeometry }
                 material={material}
@@ -98,6 +103,6 @@ export default function Experience()
             </mesh>
             )
         }
-        </group>    
+        {/* </group>     */}
     </>
 }
