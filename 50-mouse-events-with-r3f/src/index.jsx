@@ -13,6 +13,7 @@ root.render(
             far: 200,
             position: [ - 4, 3, 6 ]
         } }
+        onPointerMissed={()=>{console.log('对未命中目标的指针单击的响应')}}
     >
         <Experience />
     </Canvas>
