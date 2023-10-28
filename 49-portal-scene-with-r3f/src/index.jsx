@@ -7,6 +7,8 @@ const root = ReactDOM.createRoot(document.querySelector('#root'))
 
 root.render(
     <Canvas
+    // 解决色彩映射失真问题 SRGB
+        flat
         camera={ {
             fov: 45,
             near: 0.1,
