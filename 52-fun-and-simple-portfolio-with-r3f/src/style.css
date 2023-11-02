@@ -9,3 +9,16 @@ body,
     height: 100%;
     background: ivory;
 }
+/* 解决手机手势触发返回刷新问题 */
+canvas{
+    touch-action: none;
+}
+
+.htmlScreen iframe
+{
+    width: 1024px;
+    height: 670px;
+    border: none;
+    border-radius:20px ;
+    background-color: black;
+}
