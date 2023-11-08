@@ -2,10 +2,23 @@ import './style.css'
 import ReactDOM from 'react-dom/client'
 import { Canvas } from '@react-three/fiber'
 import Experience from './Experience.jsx'
+// 监听键盘事件
+import { KeyboardControls } from '@react-three/drei'
+import Interface from './Interface'
 
 const root = ReactDOM.createRoot(document.querySelector('#root'))
 
 root.render(
+    // 键盘监控
+    <KeyboardControls
+        map={[
+            {'name':'forward',keys:['ArrowUp','KeyW']},
+            {'name':'backward',keys:['ArrowDown','KeyS']},
+            {'name':'leftward',keys:['ArrowLeft','KeyA']},
+            {'name':'rightward',keys:['ArrowRight','KeyD']},
+            {'name':'jump',keys:['Space']},
+        ]}
+    >
     <Canvas
         shadows
         camera={ {
@@ -17,4 +30,6 @@ root.render(
     >
         <Experience />
     </Canvas>
+    <Interface/>
+    </KeyboardControls>
 )
