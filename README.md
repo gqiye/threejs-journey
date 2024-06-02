@@ -1,5 +1,6 @@
 # ThreeJS旅程
-这是我的[ThreeJS旅程]的存储库(https://threejs-journey.com/)遵循[布鲁诺·西蒙]的课程(https://twitter.com/bruno_simon) 🇫🇷 创意开发者。
+[ThreeJS旅程](https://threejs-journey.com/) 课程
+[布鲁诺·西蒙的课程](https://twitter.com/bruno_simon) 🇫🇷 创意开发者。
 
 ## 如何使用？
 每个文件夹都是一个新的课程，其中包含可用的源代码和一个自述文件，其中包含解释所做操作的简短描述。
